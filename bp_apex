@@ -1,0 +1,249 @@
+#!/usr/bin/env python3
+import os
+import subprocess
+import sys
+import traceback
+import json
+from shutil import copyfile, rmtree
+sys.path.append('bpapex')
+sys.path.append('bpapex/lib')
+from bpapex.feedback import Feedback
+from bpapex.align import Align
+
+from bpapex.common import debug
+
+FEEDBACK = 'feedback'
+PARSE = 'parse'
+ALIGN = 'align'
+CMD = [FEEDBACK, PARSE, ALIGN]
+EXECUTE_PATH= 'tmp'
+VERBOSE = 0
+
+class BPApex(object):
+
+    USAGE = '''
+%s COMMAND [OPTIONS*] FILE_1 FILE_2 ... FILE_n ...
+%s COMMAND [OPTIONS*] TEST_CASE BUGGY_FILE CORRECT_FILE ...
+%s COMMAND [OPTIONS*] TEST_DIR ...   
+
+Commands are:
+    parse      parse and retrive informations for given submissions
+    align      perfrom bpapex
+    feedback   generate feedback
+    
+Options are:
+  --verbose [0|1]    controls the amount of output information printed (default is 0)
+  --dir [0|1]        wheather using directory as root entry (default is 0)
+  --mark             path to mark file to evaluate the alignments (default is '')
+  --option           for different self-defined align mode like "origin_v_9" (default is '')
+  --symb [0|1]       path to symb file (default is 0)
+      --sw           path to symb of wrong submission (when symb is 1)
+      --sc           path to symb of correct submission (when symb is 1)
+
+    '''
+    def __init__(self):
+        pass
+
+    def debug(self, msg, *args):
+        '''
+        Prints debug message if verbose mode on.
+        '''
+        if self.verbose:
+            debug(msg, *args)
+
+    def usage(self):
+        '''
+        Prints usage information (to stderr).
+        '''
+        print(self.USAGE % (sys.argv[0],), file=sys.stderr)
+
+    def error(self, msg, *args):
+        '''
+        Prints error message and exits
+        '''
+        if args:
+            msg %= args
+        print('Error: %s\n' % (msg,), file=sys.stderr)
+        sys.exit(1)
+
+    def parseargs(self, argvs):
+        '''
+        Simple argument parser
+        '''
+        args = []
+        kwargs = {}
+
+        nextopt = None
+
+        for arg in argvs:
+            if nextopt:
+                kwargs[nextopt] = arg
+                nextopt = None
+
+            elif arg.startswith('--'):
+                nextopt = arg[2:]
+
+            elif arg.startswith('-'):
+                kwargs[arg[1:]] = True
+
+            else:
+                args.append(arg)
+
+        return args, kwargs
+
+    def main(self):
+        global VERBOSE
+
+        self.args, self.opts = self.parseargs(sys.argv[1:])
+
+        if len(self.args) < 1:
+            self.usage()
+            self.error('Command not specified!')
+
+        self.cmd = self.args[0]
+
+        if self.cmd == 'help' or self.cmd not in CMD:
+            self.usage()
+            return
+
+        if os.path.exists(EXECUTE_PATH):
+            rmtree(EXECUTE_PATH)
+        os.mkdir(EXECUTE_PATH)
+
+        self.dir = int(self.opts.pop('dir', 0))
+        self.verbose = int(self.opts.pop('verbose', 0))
+        VERBOSE = self.verbose
+        self.option = self.opts.pop('option', '')
+        self.symb = self.opts.pop('symb',0)
+
+        self.get_resources()
+        self.process_sources()
+
+        if self.cmd == FEEDBACK:
+            assert len(self.sources) == 2, "Feedback requries 2 sources, buggy and correct." + self.USAGE
+            self.feedback()
+        elif self.cmd == ALIGN:
+            assert len(self.sources) == 2, "Alignment requries 2 sources, buggy and correct." + self.USAGE
+            self.align()
+
+
+    def get_resources(self):
+        self.sources = []
+        self.mark = None
+        if self.dir == 0:
+            assert len(self.args) > 2, "To perform bpapex, input, buggy solution, and correct solution are required." + self.USAGE
+            self.testcases = self.args[1]
+            self.sources = self.args[2:]
+
+            markpath = self.opts.pop('mark', '')
+            self.get_mark(markpath)
+
+        elif self.dir == 1:
+            self.testcases = os.path.join(self.args[1], 'input')
+            self.sources.append(os.path.join(self.args[1], 'w.c'))
+            self.sources.append(os.path.join(self.args[1], 'c.c'))
+
+            markpath = os.path.join(self.args[1], 'mark')
+            self.get_mark(markpath)
+
+    def get_mark(self, markpath):
+        if os.path.exists(markpath):
+            f = open(markpath, 'r')
+            res = f.readlines()
+            if len(res) > 0:
+                self.mark = eval(res[0])
+
+    def align(self):
+        assert os.path.exists(self.symbA) and os.path.exists(self.symbB), "Alignment requries parsed symbs."
+
+        if self.option == 'bpapex': # iter_3, dis_1, all
+            align = Align(self.symbA, self.symbB, verbose=self.verbose, evidence=self.mark)
+        elif self.option == 'iter_1':
+            align = Align(self.symbA, self.symbB, verbose = self.verbose, evidence=self.mark, iter=1)
+        elif self.option == 'iter_2':
+            align = Align(self.symbA, self.symbB, verbose = self.verbose, evidence=self.mark, iter=2)
+        elif self.option == 'iter_4':
+            align = Align(self.symbA, self.symbB, verbose = self.verbose, evidence=self.mark, iter=4)
+        elif self.option == 'dis_0':
+            align = Align(self.symbA, self.symbB, verbose = self.verbose, evidence=self.mark, dis=0)
+        elif self.option == 'dis_1':
+            align = Align(self.symbA, self.symbB, verbose = self.verbose, evidence=self.mark, dis=1)
+        elif self.option in ['fv', 'fcd', 'fdd','fs','fd']:
+            align = Align(self.symbA, self.symbB, verbose=self.verbose, evidence=self.mark, mode=self.option)
+        else:
+            align = Align(self.symbA, self.symbB, verbose = self.verbose, evidence=self.mark)
+
+        alignments, js = align.align()
+        return align.parama, align.paramb, alignments, js
+
+    def feedback(self):
+        parama, paramb, alignments, result_js = self.align()
+        feedback = Feedback(parama, paramb, alignments, verbose = self.verbose)
+        feed = feedback.feedback()
+        result_js['feedback'] = feed
+
+        with open(os.path.join(EXECUTE_PATH,'res.json'), "w") as f:
+            json.dump(result_js, f)
+
+    def process_sources(self):
+        cmd = self.cmd
+
+        if cmd == PARSE:
+            assert self.symb == 0
+            for i in range(len(self.sources)):
+                self.process_source(self.sources[i], str(i))
+        else: # feedback, align
+            if self.symb == 0:
+                self.symbA = self.process_source(self.sources[0], 'b')
+                self.symbB = self.process_source(self.sources[1], 'c')
+            else:
+                self.symbA = self.opts.pop('sw','')
+                self.symbB = self.opts.pop('sc','')
+                assert len(self.symbA) > 0 and len(self.symbB) > 0
+
+    def process_source(self, src, type=''):
+        self.debug("Reading and parsing source file '%s'", src)
+        symb = self.parse(src, type)
+        return symb
+
+    def parse(self, src, type):
+        makefile = os.path.join(EXECUTE_PATH, 'Makefile')
+        input = os.path.join(EXECUTE_PATH, 'input')
+        srcc = os.path.join(EXECUTE_PATH, 'src.c')
+
+        copyfile(os.path.join('makefile', 'Makefile'), makefile)
+        copyfile(self.testcases, input)
+        copyfile(src, srcc)
+
+        make_process = subprocess.Popen(['make', '-s'], stderr=subprocess.STDOUT, cwd=EXECUTE_PATH)
+
+        if make_process.wait() != 0:
+            subprocess.Popen(['make','clean'], stderr=subprocess.STDOUT, cwd=EXECUTE_PATH)
+            return None
+
+        symb = os.path.join(EXECUTE_PATH, 'symb.out.' + type)
+        copyfile(os.path.join(EXECUTE_PATH, 'symb.out'), symb)
+        copyfile(os.path.join(EXECUTE_PATH, 'src.c'), os.path.join(EXECUTE_PATH, 'src.c.' + type))
+        copyfile(os.path.join(EXECUTE_PATH, 'stdout'), os.path.join(EXECUTE_PATH, 'stdout.' + type))
+        self.clean(makefile, [input, srcc])
+        return symb
+
+    def clean(self, makefile, files):
+        make_process = subprocess.Popen(['make', 'clean','-s'], stderr=subprocess.STDOUT, cwd=EXECUTE_PATH)
+
+        for file in files:
+            os.remove(file)
+
+        if make_process.wait() == 0:
+            os.remove(makefile)
+
+if __name__ == '__main__':
+    try:
+        bp_apex = BPApex()
+        bp_apex.main()
+        sys.exit(0)
+    except Exception as err:
+        print('Error occured: %s' % (err,), file=sys.stderr)
+        if VERBOSE:
+            traceback.print_exc()
+        sys.exit(1)
