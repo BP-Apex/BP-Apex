@@ -12,7 +12,7 @@ BP-Apex is tested on the following Python versions:
 
 ## Dependencies
 
-Running benchmark:
+Running example and benchmark:
 
 - numpy
 
