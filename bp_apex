@@ -168,7 +168,7 @@ Options are:
             align = Align(self.symbA, self.symbB, verbose = self.verbose, evidence=self.mark, dis=0)
         elif self.option == 'dis_1':
             align = Align(self.symbA, self.symbB, verbose = self.verbose, evidence=self.mark, dis=1)
-        elif self.option in ['fv', 'fcd', 'fdd','fs','fd']:
+        elif self.option in ['fs', 'fcd', 'fdd','fl','fd']:
             align = Align(self.symbA, self.symbB, verbose=self.verbose, evidence=self.mark, mode=self.option)
         else:
             align = Align(self.symbA, self.symbB, verbose = self.verbose, evidence=self.mark)

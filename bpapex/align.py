@@ -9,8 +9,8 @@ THERSHOLD = 0.6
 CERTAIN = [1 / 100, 99 / 100]
 MEDIAN = [1 / 2, 1 / 2]
 ALL = 'all'
-FV = 'fv'
 FS = 'fs'
+FL = 'fl'
 FCD = 'fcd'
 FDD = 'fdd'
 FD = 'fd'
@@ -207,9 +207,9 @@ class Align(object):
     def apply_rule(self, instance, distance):
         assert instance != None
 
-        # fV
-        if self.mode != FV:
-            self.add_fV(instance)
+        # fS
+        if self.mode != FS:
+            self.add_fS(instance)
 
         ddeps, cdeps = self.get_deps(instance[0], instance[1], distance)
 
@@ -223,9 +223,9 @@ class Align(object):
             fCD_variables = [instance] + list(cdeps)
             self.add_fD(fCD_variables, type='control')
 
-        # fS
-        if self.mode != FS:
-            self.add_fS(instance)
+        # fL
+        if self.mode != FL:
+            self.add_fL(instance)
 
         return ddeps, cdeps
 
@@ -235,7 +235,7 @@ class Align(object):
             self.add_rv(var)
             self.add_factor(var, [var], p)
 
-    def add_fS(self, variable):
+    def add_fL(self, variable):
         I1 = variable[0]
         I2 = variable[1]
 
@@ -244,7 +244,7 @@ class Align(object):
 
         v = self.gen_rv((I1, I2))
         self.add_rv(v)
-        v_ff = v + ' s'
+        v_ff = v + ' l'
 
         import re
         partten_while = re.compile(r'while\s*[(].*[)]')
@@ -257,7 +257,7 @@ class Align(object):
         ):
             self.add_factor(v_ff, [v], CERTAIN)
 
-    def add_fV(self, variable):
+    def add_fS(self, variable):
         I1 = variable[0]
         I2 = variable[1]
 
@@ -267,7 +267,7 @@ class Align(object):
         v = self.gen_rv((I1, I2))
         self.add_rv(v)
 
-        v_fv = v + ' v'
+        v_fs = v + ' s'
 
         symbs1 = I1.values()
         symbs2 = I2.values()
@@ -279,20 +279,20 @@ class Align(object):
         if isinstance(I1, STIns) and isinstance(I2, STIns):
             if len(symbs1) > 0 and len(symbs2) > 0:
                 if symbs1 == symbs2:
-                    self.add_factor(v_fv, [v], high)
+                    self.add_factor(v_fs, [v], high)
                 elif I1.value != I2.value:
-                    self.add_factor(v_fv, [v], low)
+                    self.add_factor(v_fs, [v], low)
             elif I1.expr.v != I2.expr.v:
-                self.add_factor(v_fv, [v], low)
+                self.add_factor(v_fs, [v], low)
 
         # BRIns
         elif isinstance(I1, BRIns) and isinstance(I2, BRIns):
             s1 = sorted(I1.values())
             s2 = sorted(I2.values())
             if s1 == s2:
-                self.add_factor(v_fv, [v], high)
+                self.add_factor(v_fs, [v], high)
             elif len([_ for _ in s1 if _ in s2]) == 0:
-                self.add_factor(v_fv, [v], low)
+                self.add_factor(v_fs, [v], low)
 
     def add_fD(self, variables, type=''):
         if len(variables) == 1:

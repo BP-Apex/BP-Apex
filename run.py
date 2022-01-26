@@ -16,8 +16,7 @@ CSYMB_DIR = os.path.join(BENCHMARK_DIR, "c_symbs")
 WSYMB_DIR = os.path.join(BENCHMARK_DIR, "w_symbs")
 RESULT_DIR = 'results'
 
-opts = ["bpapex","iter_1","iter_2","iter_4", "dis_0", "dis_1",
-"fv", "fcd","fdd","fs","fd"]
+opts = ["bpapex","iter_1","iter_2","iter_4", "dis_0", "dis_1", "fs", "fcd","fdd","fl","fd"]
 
 def parsing_arguments():
   parser = argparse.ArgumentParser(description = "This script is written for the evaluation of BP-Apex")
@@ -358,9 +357,9 @@ def plot(rq):
         plt.clf()
 
 def rq3():
-    opts = ["bpapex","fv", "fcd", "fdd", "fd", "fs"]
+    opts = ["bpapex","fs", "fcd", "fdd", "fd", "fl"]
     rq3 = []
-    headers = ['benchmark', 'BP-Apex', '-fV', '-fcd', '-fdd', '-fd', '-fs']
+    headers = ['benchmark', 'BP-Apex', '-fs', '-fcd', '-fdd', '-fd', '-fl']
     line = 0
     for benchmark in BENCHMARK:
         row = [benchmark]

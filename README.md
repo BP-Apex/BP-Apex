@@ -51,7 +51,7 @@ python3 bp_apex feedback examples/1/input examples/1/w.c examples/1/c.c --mark e
 To reproduce the experiment, use:
 
 ```bash
-python3 run.py --option all
+python3 run.py -option all
 ```
 
 ## Options
@@ -59,5 +59,5 @@ python3 run.py --option all
 To run the benchmark in different options (rq2 and rq3), use:
 
 ```bash
-python3 run.py --option [bpapex/fcd/.../iter_2]
+python3 run.py -option [bpapex/fcd/.../iter_2]
 ```
