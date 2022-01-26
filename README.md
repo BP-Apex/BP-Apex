@@ -43,7 +43,7 @@ python3 bp_apex feedback examples/1/input examples/1/w.c examples/1/c.c --mark e
 To perform alignment, use:
 
 ```bash
-python3 bp_apex feedback examples/1/input examples/1/w.c examples/1/c.c --mark examples/1/mark -symb --sw examples/1/w_symb --sc examples/1/c_symb --verbose 1
+python3 bp_apex align examples/1/input examples/1/w.c examples/1/c.c --mark examples/1/mark -symb --sw examples/1/w_symb --sc examples/1/c_symb --verbose 1
 ```
 
 ## Experiment
