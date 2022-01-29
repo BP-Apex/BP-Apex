@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 import sys
-sys.path.append('../bpapex/lib')
+sys.path.append('../scripts/lib')
 import lazy_object_proxy
 
 __all__ = ['Field', 'MultiField', 'KeyField', 'KWField',
