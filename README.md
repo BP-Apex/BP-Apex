@@ -1,12 +1,12 @@
-# BP-Apex
+# Bpex
 
 ## Environment
 
-BP-Apex is tested on the following operating systems:
+Bpex is tested on the following operating systems:
 
 - Ubuntu 16.04
 
-BP-Apex is tested on the following Python versions:
+Bpex is tested on the following Python versions:
 
 - python 3.7
 
