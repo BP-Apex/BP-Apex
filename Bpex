@@ -5,12 +5,12 @@ import sys
 import traceback
 import json
 from shutil import copyfile, rmtree
-sys.path.append('bpapex')
-sys.path.append('bpapex/lib')
-from bpapex.feedback import Feedback
-from bpapex.align import Align
+sys.path.append('scripts')
+sys.path.append('scripts/lib')
+from scripts.feedback import Feedback
+from scripts.align import Align
 
-from bpapex.common import debug
+from scripts.common import debug
 
 FEEDBACK = 'feedback'
 PARSE = 'parse'
@@ -19,7 +19,7 @@ CMD = [FEEDBACK, PARSE, ALIGN]
 EXECUTE_PATH= 'tmp'
 VERBOSE = 0
 
-class BPApex(object):
+class Bpex(object):
 
     USAGE = '''
 %s COMMAND [OPTIONS*] FILE_1 FILE_2 ... FILE_n ...
@@ -28,7 +28,7 @@ class BPApex(object):
 
 Commands are:
     parse      parse and retrive informations for given submissions
-    align      perfrom bpapex
+    align      perfrom alignment
     feedback   generate feedback
     
 Options are:
@@ -131,7 +131,7 @@ Options are:
         self.sources = []
         self.mark = None
         if self.dir == 0:
-            assert len(self.args) > 2, "To perform bpapex, input, buggy solution, and correct solution are required." + self.USAGE
+            assert len(self.args) > 2, "To perform bpex, input, buggy solution, and correct solution are required." + self.USAGE
             self.testcases = self.args[1]
             self.sources = self.args[2:]
 
@@ -156,7 +156,7 @@ Options are:
     def align(self):
         assert os.path.exists(self.symbA) and os.path.exists(self.symbB), "Alignment requries parsed symbs."
 
-        if self.option == 'bpapex': # iter_3, dis_1, all
+        if self.option == 'bpex': # iter_3, dis_1, all
             align = Align(self.symbA, self.symbB, verbose=self.verbose, evidence=self.mark)
         elif self.option == 'iter_1':
             align = Align(self.symbA, self.symbB, verbose = self.verbose, evidence=self.mark, iter=1)
@@ -239,8 +239,8 @@ Options are:
 
 if __name__ == '__main__':
     try:
-        bp_apex = BPApex()
-        bp_apex.main()
+        bpex = Bpex()
+        bpex.main()
         sys.exit(0)
     except Exception as err:
         print('Error occured: %s' % (err,), file=sys.stderr)

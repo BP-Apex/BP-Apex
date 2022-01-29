@@ -16,12 +16,13 @@ CSYMB_DIR = os.path.join(BENCHMARK_DIR, "c_symbs")
 WSYMB_DIR = os.path.join(BENCHMARK_DIR, "w_symbs")
 RESULT_DIR = 'results'
 
-opts = ["bpapex","iter_1","iter_2","iter_4", "dis_0", "dis_1", "fs", "fcd","fdd","fl","fd"]
+opts = ["bpex","iter_1","iter_2","iter_4", "dis_0", "dis_1",
+"fv", "fcd","fdd","fs","fd"]
 
 def parsing_arguments():
   parser = argparse.ArgumentParser(description = "This script is written for the evaluation of BP-Apex")
 
-  parser.add_argument("-option", type = str, default = "bpapex",
+  parser.add_argument("-option", type = str, default = "bpex",
     choices = opts + ["all"]
     )
   args = parser.parse_args()
@@ -62,7 +63,7 @@ def run(opt):
 
         for w in wrongs:
 
-            command = 'python3 bp_apex feedback'
+            command = 'python3 Bpex feedback'
 
             wrong = os.path.join(wrong_dir, w)
             print('run BP-Apex on ' + wrong + ' --option ' + opt)
@@ -163,16 +164,16 @@ def get_rows(path):
 
 def rq1():
     apex_path = os.path.join(RESULT_DIR, 'apex.csv')
-    bpapex_path = os.path.join(RESULT_DIR, 'bpapex', 'result.csv')
+    bpex_path = os.path.join(RESULT_DIR, 'bpex', 'result.csv')
 
-    if os.path.exists(apex_path) and os.path.exists(bpapex_path):
+    if os.path.exists(apex_path) and os.path.exists(bpex_path):
 
         apex = get_rows(apex_path)
-        bpapex = get_rows(bpapex_path)
+        bpex = get_rows(bpex_path)
         line = 0
         rq1 = []
-        headers = ['benchmark', 'matches/apex', 'matches/bpapex', 'time/apex', 'time/bpapex',
-                   'precision/apex','precision/bpapex', 'recall/apex', 'recall/bpapex', 'f1/apex', 'f1/bpapex']
+        headers = ['benchmark', 'matches/apex', 'matches/bpex', 'time/apex', 'time/bpex',
+                   'precision/apex','precision/bpex', 'recall/apex', 'recall/bpex', 'f1/apex', 'f1/bpex']
 
         for benchmark in BENCHMARK:
             row = []
@@ -181,31 +182,31 @@ def rq1():
             matched_apex = apex[line][5]
             row.append(matched_apex) # matched/apex
 
-            matched_bpapex = bpapex[line][5]
-            row.append(matched_bpapex) # matched/bpapex
+            matched_bpex = bpex[line][5]
+            row.append(matched_bpex) # matched/bpex
 
             time_apex = apex[line][6]
             row.append(time_apex) # time/apex
 
-            time_bpapex = bpapex[line][6]
-            row.append(time_bpapex) # time/bpapex
+            time_bpex = bpex[line][6]
+            row.append(time_bpex) # time/bpex
 
             precision_apex = apex[line][7]
             row.append(precision_apex) # precision/apex
 
-            precision_bpapex = bpapex[line][7]
-            row.append(precision_bpapex) # precision/bpapex
+            precision_bpex = bpex[line][7]
+            row.append(precision_bpex) # precision/bpex
 
             recall_apex = apex[line][8]
             row.append(recall_apex) # recall/apex
 
-            recall_bpapex = bpapex[line][8]
-            row.append(recall_bpapex) # recall/bpapex
+            recall_bpex = bpex[line][8]
+            row.append(recall_bpex) # recall/bpex
 
             fscore_apex = apex[line][9]
             row.append(fscore_apex) # fscore/apex
-            fscore_bpapex = bpapex[line][9]
-            row.append(fscore_bpapex) # fscore/bpapex
+            fscore_bpex = bpex[line][9]
+            row.append(fscore_bpex) # fscore/bpex
             rq1.append(row)
             line += 1
 
@@ -247,7 +248,7 @@ def get_average(headers, rq, begin):
     rq.append(average)
 
 def rq2():
-    opts = ["bpapex", "dis_0", "dis_1", "iter_1", "iter_2", "iter_4","apex"]
+    opts = ["bpex", "dis_0", "dis_1", "iter_1", "iter_2", "iter_4","apex"]
     rq2 = {}
     times = {}
     precision = {}
@@ -309,7 +310,7 @@ def rq2():
 
 def plot(rq):
     metrics = ['time', 'fs']
-    opts = ["bpapex", "dis_0", "dis_1", "iter_1", "iter_2", "iter_4","apex"]
+    opts = ["bpex", "dis_0", "dis_1", "iter_1", "iter_2", "iter_4","apex"]
 
     metric_dict = {}
     metric_dict['time'] = 'Time(s)'
@@ -317,7 +318,7 @@ def plot(rq):
 
 
     opt_dict = {}
-    opt_dict['bpapex'] = 'BP-Apex'
+    opt_dict['bpex'] = r'\textsc{Bpex}'
     opt_dict['dis_0'] = r'threshold$_0$, iter$_3$'
     opt_dict['dis_1'] = r'threshold$_1$, iter$_3$'
 
@@ -327,16 +328,18 @@ def plot(rq):
     opt_dict['apex'] = 'Apex'
 
     line_dict = {}
-    line_dict['bpapex'] = 'ro-'
+    line_dict['bpex'] = 'ro-'
     line_dict['dis_0'] = 'g+--'
     line_dict['dis_1'] = 'b^--'
 
     line_dict['iter_1'] = 'y|--'
     line_dict['iter_2'] = 'c<--'
     line_dict['iter_4'] = 'm>--'
+    import matplotlib.pyplot as plt
+    plt.rcParams['text.usetex'] = True
+    plt.rcParams.update({'font.size': 15})
 
     for metric in metrics:
-        import matplotlib.pyplot as plt
 
         res_metric = rq[metric]
         x = [1,2,3,4,5,6,7,8,9,10]
@@ -353,13 +356,15 @@ def plot(rq):
         plt.ylabel(metric_dict[metric])
         plt.legend()
         path = os.path.join(RESULT_DIR, metric + '.pdf')
+        plt.tight_layout()
+
         plt.savefig(path)
         plt.clf()
 
 def rq3():
-    opts = ["bpapex","fs", "fcd", "fdd", "fd", "fl"]
+    opts = ["bpex","fv", "fcd", "fdd", "fd", "fs"]
     rq3 = []
-    headers = ['benchmark', 'BP-Apex', '-fs', '-fcd', '-fdd', '-fd', '-fl']
+    headers = ['benchmark', 'Bpex', '-fV', '-fcd', '-fdd', '-fd', '-fs']
     line = 0
     for benchmark in BENCHMARK:
         row = [benchmark]
@@ -382,8 +387,8 @@ def rq3():
 def benchmark():
     apex_path = os.path.join(RESULT_DIR, 'apex.csv')
     apex = get_rows(apex_path)
-    bpapex_path = os.path.join(RESULT_DIR, 'bpapex', 'result.csv')
-    bpapex = get_rows(bpapex_path)
+    bpex_path = os.path.join(RESULT_DIR, 'bpex', 'result.csv')
+    bpex = get_rows(bpex_path)
     mark_path = os.path.join(BENCHMARK_DIR, 'marks')
 
     headers = ['benchmark','numbers', 'loc/buggy', 'loc/correct', 'sym expr/buggy', 'sym expr/correct', 'marks']
@@ -397,13 +402,13 @@ def benchmark():
         marks = os.listdir(path)
         row.append(len(marks))
 
-        loc_wrong = bpapex[line][1]
-        loc_correct = bpapex[line][2]
+        loc_wrong = bpex[line][1]
+        loc_correct = bpex[line][2]
         row.append(loc_wrong)  # loc
         row.append(loc_correct)
 
-        symb_wrong = bpapex[line][3]
-        symb_correct = bpapex[line][4]
+        symb_wrong = bpex[line][3]
+        symb_correct = bpex[line][4]
         row.append(symb_wrong)
         row.append(symb_correct)
 
