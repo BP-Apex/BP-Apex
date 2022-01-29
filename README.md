@@ -35,7 +35,7 @@ The `examples/` directory contains an example program:
 To generate feedback, use:
 
 ```bash
-python3 bp_apex feedback examples/1/input examples/1/w.c examples/1/c.c --mark examples/1/mark -symb --sw examples/1/w_symb --sc examples/1/c_symb --verbose 1
+python3 Bpex feedback examples/1/input examples/1/w.c examples/1/c.c --mark examples/1/mark -symb --sw examples/1/w_symb --sc examples/1/c_symb --verbose 1
 ```
 
 ## Align
@@ -43,7 +43,7 @@ python3 bp_apex feedback examples/1/input examples/1/w.c examples/1/c.c --mark e
 To perform alignment, use:
 
 ```bash
-python3 bp_apex align examples/1/input examples/1/w.c examples/1/c.c --mark examples/1/mark -symb --sw examples/1/w_symb --sc examples/1/c_symb --verbose 1
+python3 Bpex align examples/1/input examples/1/w.c examples/1/c.c --mark examples/1/mark -symb --sw examples/1/w_symb --sc examples/1/c_symb --verbose 1
 ```
 
 ## Experiment
@@ -59,5 +59,5 @@ python3 run.py -option all
 To run the benchmark in different options (rq2 and rq3), use:
 
 ```bash
-python3 run.py -option [bpapex/fcd/.../iter_2]
+python3 run.py -option [bpex/fcd/.../iter_2]
 ```
